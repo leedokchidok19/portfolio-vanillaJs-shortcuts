@@ -1,15 +1,13 @@
 {
   "manifest_version": 3,
- 
   "name": "lovelyShortcut",
-  "description": "You don't have to wander through the shortcut page and it will save you time.",
-  "version": "1.0",
- 
+  "description": "단축키 모음",
+  "version": "2.0.0",
   "action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
   },
-  "permissions": [
-    "activeTab"
-  ]
+  "background": {
+    "service_worker": "background.js"
+  }
 }
