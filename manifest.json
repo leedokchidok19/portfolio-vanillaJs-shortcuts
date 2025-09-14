@@ -3,6 +3,7 @@
   "name": "lovelyShortcut",
   "description": "단축키 모음",
   "version": "2.0.0",
+  "permissions": ["storage"],
   "action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"

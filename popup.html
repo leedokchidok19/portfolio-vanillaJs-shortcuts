@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="author"        content="leedokchidok19">
@@ -25,47 +25,142 @@
     <meta name="msapplication-TileImage" content="image/icons/ms-icon-144x144.png">
     <meta name="theme-color" content="#FFFBCC">
 
-    <title>lovelyShortcuts</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <script src="https://kit.fontawesome.com/c1420bfedb.js" crossorigin="anonymous"></script>
+  <title>lovelyShortcut</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; width: 380px; }
 
+    form {
+      display: grid;
+      gap: 8px;
+    }
+    label { font-weight: bold; font-size: 14px; }
+    input, button {
+      padding: 8px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    li {
+      background: #f9f9f9;
+      border-radius: 5px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    kbd {
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-weight: bold;
+    }
+    .delete-btn {
+      background: #dc3545;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .delete-btn:hover { background: #a71d2a; }
+  </style>
 </head>
 <body>
+  <details open>
+    <summary>Add Shortcut</summary>
+    <form id="shortcutForm">
+      <label>
+        Keyboard Shortcut:
+        <input type="text" id="shortcutKey" placeholder="e.g. Ctrl + N" required />
+      </label>
+      <label>
+        Description:
+        <input type="text" id="shortcutDesc" placeholder="e.g. Open a new window" required />
+      </label>
+      <button type="submit">Add</button>
+    </form>
+  </details>
 
-    <section id="container">
+  <h2>Shortcut List</h2>
+  <ul id="shortcutList"></ul>
 
-        <h1 class="title">lovely shortcut</h1>
+  <script>
+    const form = document.getElementById('shortcutForm');
+    const list = document.getElementById('shortcutList');
 
-        <hr>
+    // 저장된 단축키 불러오기
+    function loadShortcuts() {
+      chrome.storage.local.get('shortcuts', data => {
+        const shortcuts = data.shortcuts || [];
+        shortcuts.forEach(addShortcutToList);
+      });
+    }
 
-        <table id="display">
-        <!--display shortcut-->
-        </table>
+    // 단축키를 UI에 추가
+    function addShortcutToList(shortcut) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span><kbd>${shortcut.key}</kbd> — ${shortcut.desc}</span>
+        <button class="delete-btn">Delete</button>
+      `;
+      li.querySelector('.delete-btn').addEventListener('click', () => {
+        li.remove();
+        removeShortcut(shortcut);
+      });
+      list.appendChild(li);
+    }
 
-        <hr>
+    // 단축키 저장
+    function saveShortcut(shortcut) {
+      chrome.storage.local.get('shortcuts', data => {
+        const shortcuts = data.shortcuts || [];
+        shortcuts.push(shortcut);
+        chrome.storage.local.set({ shortcuts });
+      });
+    }
 
-    </section>
+    // 단축키 삭제
+    function removeShortcut(shortcutToRemove) {
+      chrome.storage.local.get('shortcuts', data => {
+        const updated = (data.shortcuts || []).filter(
+          s => !(s.key === shortcutToRemove.key && s.desc === shortcutToRemove.desc)
+        );
+        chrome.storage.local.set({ shortcuts: updated });
+      });
+    }
 
-    <footer>
+    // 폼 제출 처리
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const key = document.getElementById('shortcutKey').value.trim();
+      const desc = document.getElementById('shortcutDesc').value.trim();
+      if (!key || !desc) return;
 
-        <div class="sns">
-            <ul>
-                <li>
-                    <a href="https://leedokchidok19.github.io/blog-colab/" target="_blank"><i class="fab fa-blogger"></i></a>
-                </li>
-                <li>
-                    <a href="https://github.com/leedokchidok19" target="_blank"><i class="fab fa-github"></i></a>
-                </li>
-                <li>
-                    <a href="javascript:alert('I'm getting ready.');" target="_blank"><i class="fab fa-linkedin"></i></a>
-                </li>
-            </ul>
-        </div>
+      const shortcut = { key, desc };
+      addShortcutToList(shortcut);
+      saveShortcut(shortcut);
 
-    </footer>
+      form.reset();
+    });
 
-    <script src="script.js"></script>
+    // 페이지 로드 시 저장된 목록 불러오기
+    document.addEventListener('DOMContentLoaded', loadShortcuts);
+  </script>
 
 </body>
 </html>
